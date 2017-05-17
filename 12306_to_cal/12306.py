@@ -127,11 +127,11 @@ def make_ics(t):
     f.write(cal.to_ical())
     f.close()
 
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        t = unicode(sys.argv[1], "utf-8")
+    else:
+        t = clipboard.paste()
 
-if len(sys.argv) > 1:
-    t = unicode(sys.argv[1], "utf-8")
-else:
-    t = clipboard.paste()
-
-make_ics(t)
-os.system('open /tmp/cal.ics')
+    make_ics(t)
+    os.system('open /tmp/cal.ics')
