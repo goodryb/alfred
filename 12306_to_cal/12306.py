@@ -127,7 +127,9 @@ def make_ics(t):
     f.write(cal.to_ical())
     f.close()
 
+
 if __name__ == "__main__":
+    # t = u"订单E11053xxxx,XXX您已购4月24日G7609次x车xF号南京南13:57开,检票口B11。【铁路客服】"
     if len(sys.argv) > 1:
         t = unicode(sys.argv[1], "utf-8")
     else:
