@@ -10,6 +10,7 @@ import requests
 from bs4 import BeautifulSoup
 from icalendar import Calendar, Event
 import clipboard
+import sqlite3
 
 
 def get_travel(t):
@@ -122,18 +123,51 @@ def make_ics(t):
     event.add('LOCATION', cc + u" " + zc)
     event.add('DESCRIPTION', t)
     cal.add_component(event)
-    print display(cal)
     f = open(os.path.join('/tmp', 'cal.ics'), 'wb')
     f.write(cal.to_ical())
     f.close()
 
 
+def _new_connection():
+    # The current logged-in user's Messages sqlite database is found at:
+    # ~/Library/Messages/chat.db
+    db_path = '/Users/goodryb/Library/Messages/chat.db'
+    return sqlite3.connect(db_path)
+
+
+def get_messages_for_recipient(id):
+    connection = _new_connection()
+    c = connection.cursor()
+
+    # The `message` table stores all exchanged iMessages.
+    c.execute("SELECT * FROM message WHERE handle_id=" + str(id) + " order by date desc limit 1")
+    for row in c:
+        text = row[2]
+    connection.close()
+    return text
+
+
+def get_12306_ROWID():
+    ROWID = 0  # 12306 headle ROWID
+    connection = _new_connection()
+    c = connection.cursor()
+    c.execute("SELECT * FROM handle WHERE id=12306")
+    for row in c:
+        ROWID = row[0]
+    connection.close()
+    return ROWID
+
+
 if __name__ == "__main__":
     # t = u"订单E11053xxxx,XXX您已购4月24日G7609次x车xF号南京南13:57开,检票口B11。【铁路客服】"
-    if len(sys.argv) > 1:
-        t = unicode(sys.argv[1], "utf-8")
-    else:
-        t = clipboard.paste()
+    ROWID = get_12306_ROWID()
+    t = get_messages_for_recipient(ROWID)
+    print u"订单信息：" + t
+
+    # if len(sys.argv) > 1:
+    #     t = unicode(sys.argv[1], "utf-8")
+    # else:
+    #     t = clipboard.paste()
 
     make_ics(t)
     os.system('open /tmp/cal.ics')
